@@ -1,0 +1,219 @@
+<style>
+    /* Reset default margins and paddings */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+  
+    /* Hero Section Styling */
+    .hero-section {
+        position: relative;
+        width: 100%;
+        max-height: 390px;
+        height: 100vh;
+        overflow: hidden;
+        @media screen and (min-width:768px){
+          max-height: 100vh;
+        }
+    }
+  
+    #hero-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+  
+    #hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
+    }
+  
+    /* Ensure image maintains aspect ratio */
+    .hero-section img {
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+    }
+  
+    /* Button Styling */
+    .hero-buttons {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        display: flex;
+        gap: 20px;
+      @media screen and (max-width:768px){
+        width:100%;
+        align-items:center;
+        justify-content:center;
+      }
+    }
+      .hero-buttons button a{
+        text-decoration:none;
+        color: #fff;
+        font-size: 16px;
+      }
+    .hero-buttons .shop_btn{
+      display: inline-block;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      font-size: 16px;
+      line-height: 18px;
+      color: #FFF;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 16px 24px;
+      background-color: #e10094;
+      border: 1px solid #e10094;
+      transition: all 0.3s;
+    }
+    .hero-buttons .shop_btn:hover{
+      background-color: transparent;
+      border: 1px solid #FFF;
+    }
+    .hero-buttons .learn_btn{
+      display: inline-block;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      font-size: 16px;
+      line-height: 18px;
+      color: #FFF;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 16px 24px;
+      background-color: transparent;
+      border: 1px solid #FFF;
+      transition: all 0.3s;
+    }
+    .hero-buttons .learn_btn:hover{
+      background-color: #e10094;
+      border: 1px solid #e10094;
+  
+    }
+  </style>
+  <section class="hero-section">
+    {% unless section.settings.video == blank %}
+      {{
+        section.settings.video
+        | video_tag: image_size: '700', autoplay: true, loop: false, muted: true, controls: false, id: 'hero-video'
+      }}
+    {% endunless %}
+  
+    {% if section.settings.hero_image %}
+      {{
+        section.settings.hero_image
+        | image_url: width: section.settings.hero_image.width
+        | image_tag: id: 'hero-image'
+      }}
+    {% endif %}
+  
+    <div class="hero-buttons">
+      <button class="shop_btn">
+        <a href="#shopify-section-template--23061628551202__featured_products_kWHLfK">Shop Now</a>
+      </button>
+      <button class="learn_btn">
+        <a href="#shopify-section-template--23061628551202__featured_products_kWHLfK">Learn More</a>
+      </button>
+    </div>
+  </section>
+  
+  <script>
+      // Get the video and image elements
+    const video = document.getElementById('hero-video');
+    const image = document.getElementById('hero-image');
+  
+    // Variables to control looping and image display duration
+    let loop = {{ section.settings.video_loop }};
+    let img_stay = {{ section.settings.img_visible_duration }};
+  
+    // Function to start the video with audio enabled
+    function startVideoWithAudio() {
+        // Ensure the video is not muted
+        video.muted = false;
+  
+        // Handle play event with user interaction check
+        video.play().then(() => {
+            console.log('Video is playing with audio.');
+        }).catch(error => {
+            console.warn('Autoplay with audio is blocked. Waiting for user interaction.');
+            video.muted = true;
+            video.play();
+        });
+    }
+  
+    // Function to handle looping animation
+    function startLoop() {
+        startVideoWithAudio();
+        video.addEventListener('ended', () => {
+            image.style.opacity = '1';
+            if (loop) {
+                setTimeout(() => {
+                    image.style.opacity = '0';
+                    startVideoWithAudio();
+                }, img_stay);
+            }
+        });
+    }
+  
+    // Start the loop or show image once when video ends
+    if (loop) {
+        startLoop();
+    } else {
+        video.addEventListener('ended', () => {
+            image.style.opacity = '1';
+        });
+    }
+  </script>
+  
+  {% schema %}
+  {
+    "name": "Video hero slide",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "hero_image",
+        "label": "Hero image"
+      },
+      {
+        "type": "video",
+        "id": "video",
+        "label": "Upload a video"
+      },
+      {
+        "type": "checkbox",
+        "id": "video_loop",
+        "label": "Video loop",
+        "default":false
+      },
+      {
+        "type": "number",
+        "id": "img_visible_duration",
+        "label": "Image visible duration",
+        "default":5000
+      }
+    ],
+    "presets": [
+      {
+        "name": "Video hero slide"
+      }
+    ]
+  }
+  {% endschema %}  
